@@ -21,7 +21,7 @@ jobs:
           cd compiler
           mkdir build
           cd build
-          cmake ../source/compiler
+          cmake ../source/compiler -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           make
 
       - name: Compilar
