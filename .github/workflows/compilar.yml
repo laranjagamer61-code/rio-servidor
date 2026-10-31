@@ -24,8 +24,6 @@ jobs:
           cd pawn
           for f in *.tar.gz; do tar xzf "$f"; done
           for f in *.zip; do unzip -o "$f"; done
-          cd ..
-          find pawn -type f | head -n 30
 
       - name: Baixar includes do open.mp
         run: git clone --depth 1 https://github.com/openmultiplayer/omp-stdlib
@@ -34,12 +32,10 @@ jobs:
         run: |
           PAWNCC=$(find "$PWD/pawn" -name pawncc -type f | head -n 1)
           LIBPAWNC=$(find "$PWD/pawn" -name 'libpawnc.so*' | head -n 1)
-          echo "Usando: $PAWNCC"
-          echo "Biblioteca: $LIBPAWNC"
           chmod +x "$PAWNCC"
           export LD_LIBRARY_PATH="$(dirname "$LIBPAWNC"):$(dirname "$PAWNCC")"
           mkdir -p saida
-          "$PAWNCC" rio_corrigido.pwn -i omp-stdlib -o saida/rio.amx
+          "$PAWNCC" rio_corrigido.pwn "-i$PWD/omp-stdlib" "-osaida/rio.amx"
 
       - name: Guardar o rio.amx
         uses: actions/upload-artifact@v4
