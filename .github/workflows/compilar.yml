@@ -32,10 +32,12 @@ jobs:
 
       - name: Compilar
         run: |
-          PAWNCC=$(find pawn -name pawncc -type f | head -n 1)
+          PAWNCC=$(find "$PWD/pawn" -name pawncc -type f | head -n 1)
+          LIBPAWNC=$(find "$PWD/pawn" -name 'libpawnc.so*' | head -n 1)
           echo "Usando: $PAWNCC"
+          echo "Biblioteca: $LIBPAWNC"
           chmod +x "$PAWNCC"
-          export LD_LIBRARY_PATH="$(dirname "$PAWNCC")"
+          export LD_LIBRARY_PATH="$(dirname "$LIBPAWNC"):$(dirname "$PAWNCC")"
           mkdir -p saida
           "$PAWNCC" rio_corrigido.pwn -i omp-stdlib -o saida/rio.amx
 
