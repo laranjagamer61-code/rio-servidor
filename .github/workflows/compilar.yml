@@ -11,24 +11,32 @@ jobs:
       - name: Baixar seu codigo
         uses: actions/checkout@v4
 
-      - name: Baixar compilador e includes
-        run: |
-          git clone --depth 1 https://github.com/openmultiplayer/compiler
-          git clone --depth 1 https://github.com/openmultiplayer/omp-stdlib
+      - name: Instalar biblioteca 32 bits
+        run: sudo apt-get update && sudo apt-get install -y libc6-i386
 
-      - name: Construir o pawncc
+      - name: Baixar pawncc pronto do open.mp
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cd compiler
-          mkdir build
-          cd build
-          cmake ../source/compiler -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_C_FLAGS="-std=gnu11"
-          make
+          shopt -s nullglob
+          mkdir -p pawn
+          gh release download --repo openmultiplayer/compiler --pattern '*linux*' --dir pawn
+          cd pawn
+          for f in *.tar.gz; do tar xzf "$f"; done
+          for f in *.zip; do unzip -o "$f"; done
+          cd ..
+          find pawn -type f | head -n 30
+
+      - name: Baixar includes do open.mp
+        run: git clone --depth 1 https://github.com/openmultiplayer/omp-stdlib
 
       - name: Compilar
         run: |
-          mkdir -p saida
-          PAWNCC=$(find "$GITHUB_WORKSPACE/compiler" -name pawncc -type f | head -n 1)
+          PAWNCC=$(find pawn -name pawncc -type f | head -n 1)
           echo "Usando: $PAWNCC"
+          chmod +x "$PAWNCC"
+          export LD_LIBRARY_PATH="$(dirname "$PAWNCC")"
+          mkdir -p saida
           "$PAWNCC" rio_corrigido.pwn -i omp-stdlib -o saida/rio.amx
 
       - name: Guardar o rio.amx
